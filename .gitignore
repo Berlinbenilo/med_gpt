@@ -133,6 +133,13 @@ asserts/
 
 database.db
 notes.txt
+__pycache__/
 
+src/constants/__pycache__/
+src/entities/__pycache__/
+src/services/__pycache__/
+
+
+# PyCharm specific files
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,venv
 

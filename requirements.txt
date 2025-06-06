@@ -1,0 +1,12 @@
+peewee
+langchain-core
+PyPDF2
+fastapi
+qdrant-client
+fastembed
+python-dotenv
+uvicorn
+langchain-huggingface
+langchain-openai
+langchain-qdrant
+langchain-experimental
