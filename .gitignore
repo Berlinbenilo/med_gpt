@@ -138,7 +138,7 @@ __pycache__/
 src/constants/__pycache__/
 src/entities/__pycache__/
 src/services/__pycache__/
-
+qdrant_storage/
 
 # PyCharm specific files
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,venv
