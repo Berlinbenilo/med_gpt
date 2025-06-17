@@ -1,24 +1,27 @@
 import hashlib
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
-from langchain.chat_models import ChatOllama
+from langchain.chat_models import ChatOllama, ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
-from src.constants.properties import available_model, model_config
+from backend.src.constants.properties import model_config
+from backend.src.entities.db_model import Models
 
 
-def get_model(model_name: str):
-    for model_provider, model_names in available_model.items():
-        if model_name in model_names:
-            return model_config[model_name], model_provider
-    raise ValueError(f"Model {model_name} not found in available models.")
+def get_model(model_name: str) -> Tuple[Dict, str]:
+    try:
+        res = Models.get(Models.name == model_name)
+        return model_config[res.name], res.model_provider
+    except IndexError:
+        raise ValueError(f"Model {model_name} not found in the database. Please ensure it is registered before running the application.")
 
 
 def llm_factory(model_name) -> BaseChatModel:
+    print("Selected model name ->", model_name)
     model = None
 
     config, model_provider = get_model(model_name)
@@ -26,6 +29,11 @@ def llm_factory(model_name) -> BaseChatModel:
         model = ChatOpenAI(**config)
     elif model_provider == "ollama":
         model = ChatOllama(**config)
+    elif model_provider == "anthropic":
+        model = ChatAnthropic(**config)
+    elif model_provider == "google_genai":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        model = ChatGoogleGenerativeAI(**config)
     return model
 
 

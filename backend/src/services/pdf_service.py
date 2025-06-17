@@ -14,8 +14,8 @@ from langchain_core.documents import Document
 from langchain_experimental.text_splitter import SemanticChunker
 from langchain_openai.embeddings import OpenAIEmbeddings
 
-from src.constants.properties import IMAGE_PATH, SERVER_URL
-from src.entities.db_model import FileIngestion, FileIngestionStatus
+from backend.src.constants.properties import IMAGE_PATH, SERVER_URL
+from backend.src.entities.db_model import FileIngestion, FileIngestionStatus
 
 
 @dataclass
@@ -95,11 +95,15 @@ class Ingestion:
         # TODO: Implement image summarization logic
         ...
 
-    def generate_semantic_chunk(self):
+    def generate_semantic_chunk(self, batch_size: int = 10):
         file_id = f"{uuid4()}_{datetime.now()}"
         documents = [self.pypdf_extraction.extract_text(page_no) for page_no in range(self.pypdf_extraction.length)]
         semantic_chunker = SemanticChunker(self.embedder, breakpoint_threshold_type="percentile")
-        semantic_chunks = semantic_chunker.create_documents(documents)
+        semantic_chunks = []
+        for i in range(0, len(documents), batch_size):
+            batch = documents[i:i + batch_size]
+            semantic_chunks.extend(semantic_chunker.create_documents(batch))
+            print("Processed batch from index", i, "to", i + batch_size)
         all_semantic_chunks, ids = [], []
         for chunk in semantic_chunks:
             chunk_id = str(uuid4())

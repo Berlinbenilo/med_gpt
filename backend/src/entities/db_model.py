@@ -26,5 +26,11 @@ class FileIngestionStatus(BaseModel):
     file_url = CharField()
 
 
+class Models(BaseModel):
+    id = CharField(primary_key=True)
+    name = CharField()
+    model_provider = FloatField()
+
+
 sqlite_db.connect()
-sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus], safe=True)
+sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models], safe=True)

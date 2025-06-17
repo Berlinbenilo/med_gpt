@@ -1,28 +1,32 @@
 import glob
 import os
+import warnings
+from datetime import datetime
+from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI
 from fastapi import UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from langchain_core._api.deprecation import LangChainDeprecationWarning
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langgraph.checkpoint.memory import MemorySaver
 from pydantic import BaseModel
 
-from src.constants.config import vector_store, detectron_model
-from src.constants.prompts import RAG_PROMPT
-from src.constants.properties import IMAGE_PATH, PDF_PATH, model_config
-from src.graphs.med_tutor import MedTutor
-from src.services.llm_service import llm_factory
-from src.services.pdf_service import Extraction, Ingestion
-import asyncio
-from fastapi.middleware.cors import CORSMiddleware
-from typing import Dict
+from backend.src.constants.config import vector_store, detectron_model
+from backend.src.constants.prompts import RAG_PROMPT
+from backend.src.constants.properties import IMAGE_PATH, PDF_PATH
+from backend.src.entities.db_model import Models, FileIngestionStatus
+from backend.src.graphs.med_tutor import MedTutor
+from backend.src.services.llm_service import llm_factory
+from backend.src.services.pdf_service import Extraction, Ingestion
+
+warnings.filterwarnings("ignore", category=LangChainDeprecationWarning)
 
 app = FastAPI()
-
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,13 +37,14 @@ app.add_middleware(
 )
 
 
-
 class PDF(BaseModel):
     folder_path: str
 
+
 class Chat(BaseModel):
     input_query: str
-    config : Dict
+    config: Dict
+
 
 def format_docs(docs):
     return "\n\n".join(
@@ -66,7 +71,7 @@ def get_pdf(filename: str):
     return FileResponse(pdf_path, media_type="application/pdf")
 
 
-@app.post("/ingest/pdf")
+@app.post("/pdf/ingest/file")
 async def ingest_pdf(file: UploadFile = File(...)):
     temp_path = os.path.join(PDF_PATH, file.filename)
     with open(temp_path, "wb") as buffer:
@@ -78,23 +83,31 @@ async def ingest_pdf(file: UploadFile = File(...)):
     return {"message": "PDF ingested successfully", "ids": result.chunk_ids}
 
 
-@app.post("/ingest/folder")
+@app.post("/pdf/ingest/folder")
 async def ingest_folder(pdf_item: PDF):
     dest_folder = os.path.join("asserts", "pdf")
     os.makedirs(dest_folder, exist_ok=True)
     pdf_files = glob.glob(f"{pdf_item.folder_path}/*.pdf")
     all_results = []
-    for i, pdf_file in enumerate(pdf_files):
-        dest_path = os.path.join(dest_folder, os.path.basename(pdf_file))
+
+    for pdf_file in pdf_files:
+        filename = os.path.basename(pdf_file)
+        print(f"Processing file : {filename}")
+        if FileIngestionStatus.select().where(FileIngestionStatus.file_name == filename).exists():
+            print(f"Skipped : {filename}")
+            continue
+
+        dest_path = os.path.join(dest_folder, filename)
         if not os.path.exists(dest_path):
             with open(pdf_file, "rb") as src, open(dest_path, "wb") as dst:
                 dst.write(src.read())
+
         pdf_extraction = Extraction(dest_path, model=detectron_model)
         ingestion_service = Ingestion(dest_path, collection=vector_store, pdf_extraction=pdf_extraction)
         result = ingestion_service.ingest_chunks()
-        all_results.append({"file": os.path.basename(dest_path), "ids": result.chunk_ids})
-    return {"message": "All PDFs ingested successfully", "results": all_results}
+        all_results.append({"file": filename})
 
+    return {"message": "PDFs ingested successfully", "results": all_results}
 
 @app.post("/search")
 async def search(query: str, model_name: str, top_k: int = 10):
@@ -103,7 +116,7 @@ async def search(query: str, model_name: str, top_k: int = 10):
         template=RAG_PROMPT,
         input_variables=["question", "context"]
     )
-    llm = llm_factory(model_name= model_name)
+    llm = llm_factory(model_name=model_name)
     rag_chain = prompt | llm | StrOutputParser()
     generation = rag_chain.invoke({"context": format_docs(results), "question": query})
     return {
@@ -114,17 +127,25 @@ async def search(query: str, model_name: str, top_k: int = 10):
 
 @app.post("/chat")
 async def chat(item: Chat):
+    print("Selected model ", item.config.get('model_name'))
     state = {
-        "messages": [HumanMessage(content= item.input_query)],
+        "messages": [HumanMessage(content=item.input_query)],
         "model_config": item.config,
         "remaining_steps": 5
     }
     graph = MedTutor(collection=vector_store, model_config=item.config)
     response = await graph.arun(input_payload=state,
-                                      config={"configurable": {"thread_id": "3"}},
-                                      memory=MemorySaver()
-                                      )
-    return {"message" : response, "status" : True}
+                                config={"configurable": {"thread_id": "3"}},
+                                memory=MemorySaver()
+                                )
+    return {"message": response, "status": True}
+
+
+@app.get("/models")
+async def get_models():
+    return {
+        "models": list(Models.select(Models.id, Models.name).dicts())
+    }
 
 
 if __name__ == "__main__":

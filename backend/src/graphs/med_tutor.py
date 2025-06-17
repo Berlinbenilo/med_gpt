@@ -4,11 +4,11 @@ from langchain_qdrant import QdrantVectorStore
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import START, END, StateGraph
 
-from src.agents.unstructured import UnstructuredAgent
-from src.agents.subject_classifier import SubjectClassifier
-from src.constants.prompts import MEDICAL_QUESTION_CLASSIFIER_PROMPT
-from src.entities.state_model import MedTutorGraphState
-from src.tools.vector_search import VectorSearch
+from backend.src.agents.classifier import SubjectClassifier
+from backend.src.agents.unstructured import UnstructuredAgent
+from backend.src.constants.prompts import MEDICAL_QUESTION_CLASSIFIER_PROMPT
+from backend.src.entities.state_model import MedTutorGraphState
+from backend.src.tools.vector_search import VectorSearch
 
 
 class MedTutor(object):
@@ -20,10 +20,11 @@ class MedTutor(object):
         async def unstructured_search(state):
             vector_search_tool = VectorSearch(collection=self.collection)
             return await UnstructuredAgent(state=state, tools=[vector_search_tool],
-                                           model_config=self.model_config).arun()
+                                           model_config=self.model_config).arun()  # replaced self.model_config
 
         async def subject_classifier(state):
-            return await SubjectClassifier(state=state, tools = [], model_config=self.model_config, prompt= MEDICAL_QUESTION_CLASSIFIER_PROMPT).arun()
+            return await SubjectClassifier(state=state, tools=[], model_config= self.model_config,
+                                           prompt=MEDICAL_QUESTION_CLASSIFIER_PROMPT).arun()
 
         self.agents = {
             "classifier": subject_classifier,

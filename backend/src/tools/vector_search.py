@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 class VectorSearchInput(BaseModel):
     query: str = Field(description="The search query to find relevant documents in the vector database.")
-    top_k: int = Field(default=5, description="Number of top documents to return.")
+    top_k: int = Field(default=50, description="Number of top documents to return.")
 
 
 class VectorSearch(BaseTool):
@@ -20,11 +20,13 @@ class VectorSearch(BaseTool):
     collection: Any
 
     def _run(self, query: str, top_k: int = 50, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        results = self.collection.similarity_search(query, k=top_k)
+        results = self.collection.similarity_search(query, k=50)
         contents = "\n".join([doc.page_content for doc in results])
         return contents
 
     async def _arun(self, query: str, top_k: int = 50, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        results = await self.collection.asimilarity_search(query, k=top_k)
+        results = await self.collection.asimilarity_search(query, k=50)
         contents = "\n".join([doc.page_content for doc in results])
+        print("topk -> ", top_k)
+        print("contents -> ", results)
         return contents

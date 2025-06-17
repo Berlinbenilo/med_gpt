@@ -7,4 +7,3 @@ class MedTutorGraphState(TypedDict):
     model_config: Dict
     remaining_steps: int
     medical_type: str
-
