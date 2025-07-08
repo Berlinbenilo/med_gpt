@@ -32,6 +32,7 @@ class Extraction(object):
         self.reader = PdfReader(self.pdf_path)
         self.length = len(self.reader.pages)
         self.model = model
+        print(f"NO of pages : {self.length}")
 
     def extract_text(self, page_num: int) -> str:
         page = self.reader.pages[page_num]
@@ -46,7 +47,7 @@ class Extraction(object):
             image_id = str(uuid4())
             with open(f"{IMAGE_PATH}/{image_id}.png", "wb") as fp:
                 fp.write(image_file_object.data)
-            image_urls.append(f"{SERVER_URL}/{image_id}")
+            image_urls.append(f"{SERVER_URL}/images/{image_id}")
         return image_urls
 
     @staticmethod
@@ -69,6 +70,21 @@ class Extraction(object):
         layout_result = self.model.detect(image)
         image_urls = self.crop_figures(layout_result, image)
         return image_urls
+
+    def extract_and_save_image(self, page_num: List):
+        # image = np.asarray(pdf2image.convert_from_path(self.pdf_path, poppler_path=r"C:\poppler-24.08.0\Library\bin")[page_num])
+        pages = pdf2image.convert_from_path(self.pdf_path, poppler_path=r"C:\poppler-24.08.0\Library\bin")
+        Path(IMAGE_PATH).mkdir(parents=True, exist_ok=True)
+        for count, page in enumerate(pages):
+            if count in page_num:
+                layout_result = self.model.detect(page)
+                figure_blocks = lp.Layout([b for b in layout_result if b.type == 'figure'])
+                if figure_blocks:
+                    page.save(f'{IMAGE_PATH}/{str(uuid4())}.png')
+        # figure_blocks = lp.Layout([b for b in layout_result if b.type == 'figure'])
+        # if figure_blocks:
+        # Image.fromarray(image).save(f'{IMAGE_PATH}/{str(uuid4())}.png')
+
 
 
 class Ingestion:
@@ -95,34 +111,95 @@ class Ingestion:
         # TODO: Implement image summarization logic
         ...
 
-    def generate_semantic_chunk(self, batch_size: int = 10):
+    # def generate_semantic_chunk(self, batch_size: int = 10):
+    #     file_id = f"{uuid4()}_{datetime.now()}"
+    #     documents = [self.pypdf_extraction.extract_text(page_no) for page_no in range(self.pypdf_extraction.length)]
+    #     semantic_chunker = SemanticChunker(self.embedder, breakpoint_threshold_type="percentile")
+    #     semantic_chunks = []
+    #     for i in range(0, len(documents), batch_size):
+    #         batch = documents[i:i + batch_size]
+    #         semantic_chunks.extend(semantic_chunker.create_documents(batch))
+    #         print("Processed batch from index", i, "to", i + batch_size)
+    #     all_semantic_chunks, ids = [], []
+    #     for chunk in semantic_chunks:
+    #         chunk_id = str(uuid4())
+    #         ids.append(chunk_id)
+    #         metadata = {
+    #             "file_id": file_id,
+    #             "chunk_id": chunk_id,
+    #         }
+    #         all_semantic_chunks.append(Document(
+    #             page_content=chunk.page_content,
+    #             metadata=metadata
+    #         ))
+    #         FileIngestion.insert(metadata).execute()
+    #     FileIngestionStatus.insert({
+    #         "file_id": file_id,
+    #         "file_name": self.file_name,
+    #         "file_url": f"{SERVER_URL}/pdf/{self.file_name}",
+    #         "status": "completed"
+    #     }).execute()
+    #     print("File ingestion done successfully for file:", self.file_name)
+    #     return all_semantic_chunks, ids
+
+    def generate_semantic_chunk(self, batch_size: int = 30):
         file_id = f"{uuid4()}_{datetime.now()}"
-        documents = [self.pypdf_extraction.extract_text(page_no) for page_no in range(self.pypdf_extraction.length)]
         semantic_chunker = SemanticChunker(self.embedder, breakpoint_threshold_type="percentile")
-        semantic_chunks = []
-        for i in range(0, len(documents), batch_size):
-            batch = documents[i:i + batch_size]
-            semantic_chunks.extend(semantic_chunker.create_documents(batch))
-            print("Processed batch from index", i, "to", i + batch_size)
+
+        def page_text_generator():
+            """Generator for page text processing"""
+            current_batch = []
+            batch_number = 0
+            for page_no in range(self.pypdf_extraction.length):
+                current_batch.append((page_no, self.pypdf_extraction.extract_text(page_no)))
+
+                if len(current_batch) >= batch_size:
+                    yield batch_number, current_batch
+                    batch_number += 1
+                    current_batch = []
+
+            if current_batch:  # Yield remaining pages
+                yield batch_number, current_batch
+
+        def process_chunks(text_batch):
+            """Process a batch of text into chunks"""
+            # Extract just the text, keeping page numbers separate
+            texts = [text for _, text in text_batch]
+            chunks = semantic_chunker.create_documents(texts)
+            for chunk in chunks:
+                chunk_id = str(uuid4())
+                metadata = {
+                    "file_id": file_id,
+                    "chunk_id": chunk_id,
+                }
+
+                FileIngestion.insert(metadata).execute()
+
+                document = Document(
+                    page_content=chunk.page_content,
+                    metadata=metadata
+                )
+                yield document, chunk_id
+
         all_semantic_chunks, ids = [], []
-        for chunk in semantic_chunks:
-            chunk_id = str(uuid4())
-            ids.append(chunk_id)
-            metadata = {
-                "file_id": file_id,
-                "chunk_id": chunk_id,
-            }
-            all_semantic_chunks.append(Document(
-                page_content=chunk.page_content,
-                metadata=metadata
-            ))
-            FileIngestion.insert(metadata).execute()
+        for batch_num, text_batch in page_text_generator():
+            start_page = text_batch[0][0]  # First page number in batch
+            end_page = text_batch[-1][0]  # Last page number in batch
+            print(f"Processing pages {start_page} to {end_page} (batch {batch_num})")
+
+            for doc, chunk_id in process_chunks(text_batch):
+                all_semantic_chunks.append(doc)
+                ids.append(chunk_id)
+
+            del text_batch
+
         FileIngestionStatus.insert({
             "file_id": file_id,
             "file_name": self.file_name,
             "file_url": f"{SERVER_URL}/pdf/{self.file_name}",
             "status": "completed"
         }).execute()
+
         print("File ingestion done successfully for file:", self.file_name)
         return all_semantic_chunks, ids
 

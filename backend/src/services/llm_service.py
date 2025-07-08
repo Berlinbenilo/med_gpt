@@ -1,7 +1,6 @@
 import hashlib
 from typing import Dict, List, Optional, Tuple
 
-from langchain.chat_models import ChatOllama, ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import PromptTemplate
@@ -23,17 +22,9 @@ def get_model(model_name: str) -> Tuple[Dict, str]:
 def llm_factory(model_name) -> BaseChatModel:
     print("Selected model name ->", model_name)
     model = None
-
     config, model_provider = get_model(model_name)
-    if model_provider == "openai":
+    if model_provider == "openai" or model_provider == "fireworks":
         model = ChatOpenAI(**config)
-    elif model_provider == "ollama":
-        model = ChatOllama(**config)
-    elif model_provider == "anthropic":
-        model = ChatAnthropic(**config)
-    elif model_provider == "google_genai":
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        model = ChatGoogleGenerativeAI(**config)
     return model
 
 

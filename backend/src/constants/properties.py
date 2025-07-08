@@ -10,9 +10,9 @@ SERVER_URL = "http://localhost:8000"
 
 
 model_config = {
-    "gpt-4o-mini": {
+    "gpt-4.1": {
         'temperature': 0,
-        "model": "gpt-4o-mini",
+        "model": "gpt-4.1",
         "api_key": os.getenv("OPENAI_API_KEY"),
     },
     "gpt-4o": {
@@ -20,24 +20,18 @@ model_config = {
         "model": "gpt-4o",
         "api_key": os.getenv("OPENAI_API_KEY"),
     },
-    "llama3": {
-        'temperature': 0,
-        "model": "llama3",
-        "base_url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
+    "o3-mini": {
+        "model": "o3-mini",
+        "api_key": os.getenv("OPENAI_API_KEY"),
     },
-    "claude-3-7-sonnet-latest": {
-        'temperature': 0,
-        "model": "claude-3-7-sonnet-latest",
-        "anthropic_api_key": os.getenv("ANTHROPIC_API_KEY")
+    "deepseek-v3-0324":{
+        "model": "accounts/fireworks/models/deepseek-v3-0324",
+        "base_url":"https://api.fireworks.ai/inference/v1",
+           "api_key": os.getenv("FIREWORKS_API_KEY"),
     },
-    "gemini-2.0-flash": {
-        'temperature': 0,
-        "model": "gemini-2.0-flash",
-        "api_key": os.getenv("GOOGLE_API_KEY"),
-    },
-    "deepscaler:1.5b": {
-        'temperature': 0,
-        "model": "deepscaler:1.5b",
-        "base_url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
-    },
+    "llama4-maverick-instruct-basic":{
+        "model": "accounts/fireworks/models/llama4-maverick-instruct-basic",
+        "base_url":"https://api.fireworks.ai/inference/v1",
+           "api_key": os.getenv("FIREWORKS_API_KEY"),
+    }
 }

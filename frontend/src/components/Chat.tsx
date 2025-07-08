@@ -19,7 +19,7 @@ export const Chat: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(true);
-  const [model, setModel] = useState<string>("gpt-4o"); // Default model
+  const [model, setModel] = useState<string>("deepseek-v3-0324"); // Default model
   const [modelList, setModelList] = useState<any[]>(); // Default model
   
   const messagesEndRef = useRef<HTMLDivElement>(null);

@@ -1,8 +1,7 @@
 import glob
 import os
 import warnings
-from datetime import datetime
-from typing import Dict
+from typing import Dict, List
 
 import uvicorn
 from fastapi import FastAPI
@@ -14,7 +13,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import PromptTemplate
 from langgraph.checkpoint.memory import MemorySaver
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.src.constants.config import vector_store, detectron_model
 from backend.src.constants.prompts import RAG_PROMPT
@@ -30,7 +29,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "https://348213d06995.ngrok-free.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -63,6 +62,18 @@ def get_image(image_id: str):
     return {"error": "File not found!"}
 
 
+@app.post("/pdf/to_image")
+async def ingest_pdf(file: UploadFile = File(...), page_num: List[int] = None):
+    temp_path = os.path.join(PDF_PATH, file.filename)
+    with open(temp_path, "wb") as buffer:
+        buffer.write(await file.read())
+
+    pdf_extraction = Extraction(temp_path, model=detectron_model)
+
+    pdf_extraction.extract_and_save_image(page_num= page_num)
+    return {"message": "Image extracted successfully", "page_num": page_num}
+
+
 @app.get("/pdf/{filename}")
 def get_pdf(filename: str):
     pdf_path = os.path.join("asserts/pdf", filename)
@@ -91,23 +102,30 @@ async def ingest_folder(pdf_item: PDF):
     all_results = []
 
     for pdf_file in pdf_files:
-        filename = os.path.basename(pdf_file)
-        print(f"Processing file : {filename}")
-        if FileIngestionStatus.select().where(FileIngestionStatus.file_name == filename).exists():
-            print(f"Skipped : {filename}")
+        try:
+            filename = os.path.basename(pdf_file)
+            print(f"Processing file : {filename}")
+            if FileIngestionStatus.select().where(FileIngestionStatus.file_name == filename).exists():
+                print(f"Skipped : {filename}")
+                continue
+
+            dest_path = os.path.join(dest_folder, filename)
+            if not os.path.exists(dest_path):
+                with open(pdf_file, "rb") as src, open(dest_path, "wb") as dst:
+                    dst.write(src.read())
+            try:
+                pdf_extraction = Extraction(dest_path, model=detectron_model)
+                ingestion_service = Ingestion(dest_path, collection=vector_store, pdf_extraction=pdf_extraction)
+                result = ingestion_service.ingest_chunks()
+                all_results.append({"file": filename})
+            finally:
+                if os.path.exists(dest_path):
+                    os.remove(dest_path)
+        except Exception as e:
+            print(repr(e))
             continue
-
-        dest_path = os.path.join(dest_folder, filename)
-        if not os.path.exists(dest_path):
-            with open(pdf_file, "rb") as src, open(dest_path, "wb") as dst:
-                dst.write(src.read())
-
-        pdf_extraction = Extraction(dest_path, model=detectron_model)
-        ingestion_service = Ingestion(dest_path, collection=vector_store, pdf_extraction=pdf_extraction)
-        result = ingestion_service.ingest_chunks()
-        all_results.append({"file": filename})
-
     return {"message": "PDFs ingested successfully", "results": all_results}
+
 
 @app.post("/search")
 async def search(query: str, model_name: str, top_k: int = 10):
