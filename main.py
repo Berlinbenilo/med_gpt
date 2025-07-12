@@ -146,6 +146,7 @@ async def search(query: str, model_name: str, top_k: int = 10):
 @app.post("/chat")
 async def chat(item: Chat):
     print("Selected model ", item.config.get('model_name'))
+    print("Query: ", item.input_query)
     state = {
         "messages": [HumanMessage(content=item.input_query)],
         "model_config": item.config,

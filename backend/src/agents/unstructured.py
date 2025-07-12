@@ -16,8 +16,10 @@ class UnstructuredAgent(BaseAgent):
         print("Unstructured Agent invoked")
 
         messages = [("user", self.state['messages'][-1].content)]
+        print("state messages -->", self.state['messages'][-1])
         print("type -->", self.state.get('medical_type'))
         if not self.prompt:
+            print("No prompt provided, using default prompt for medical type:", self.state.get('medical_type'))
             self.prompt = ALL_PROMPTS[self.state.get('medical_type')]
 
         if self.tools:

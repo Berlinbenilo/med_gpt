@@ -7,7 +7,8 @@ class BaseAgent:
         self.tools = tools
         self.state = state
         print("Selected model config ->", model_config)
-        self.parser_obj = LLMWrapper(model_name=model_config.get('model_name', 'deepseek-v3-0324'))
+        # self.parser_obj = LLMWrapper(model_name=model_config.get('model_name', 'deepseek-v3-0324'))
+        self.parser_obj = LLMWrapper(model_name='deepseek-v3-0324')
 
     async def arun(self):
         raise NotImplementedError("Subclasses must implement the arun method.")

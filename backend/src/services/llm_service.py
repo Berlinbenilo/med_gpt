@@ -20,7 +20,6 @@ def get_model(model_name: str) -> Tuple[Dict, str]:
 
 
 def llm_factory(model_name) -> BaseChatModel:
-    print("Selected model name ->", model_name)
     model = None
     config, model_provider = get_model(model_name)
     if model_provider == "openai" or model_provider == "fireworks":

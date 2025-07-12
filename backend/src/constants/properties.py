@@ -33,5 +33,9 @@ model_config = {
         "model": "accounts/fireworks/models/llama4-maverick-instruct-basic",
         "base_url":"https://api.fireworks.ai/inference/v1",
            "api_key": os.getenv("FIREWORKS_API_KEY"),
-    }
+    },    "deepseek-r1-0528":{
+        "model": "accounts/fireworks/models/deepseek-r1-0528",
+        "base_url":"https://api.fireworks.ai/inference/v1",
+           "api_key": os.getenv("FIREWORKS_API_KEY"),
+    },
 }

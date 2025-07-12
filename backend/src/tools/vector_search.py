@@ -20,13 +20,13 @@ class VectorSearch(BaseTool):
     collection: Any
 
     def _run(self, query: str, top_k: int = 50, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        print("Running synchronous vector search with query:", query)
         results = self.collection.similarity_search(query, k=50)
         contents = "\n".join([doc.page_content for doc in results])
         return contents
 
     async def _arun(self, query: str, top_k: int = 50, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
+        print("Running async vector search with query:", query)
         results = await self.collection.asimilarity_search(query, k=50)
         contents = "\n".join([doc.page_content for doc in results])
-        print("topk -> ", top_k)
-        print("contents -> ", results)
         return contents
