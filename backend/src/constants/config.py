@@ -37,9 +37,9 @@ vector_store = QdrantVectorStore(
 print("Embeddings loaded and vector store initialized.")
 print("Loading Detectron2 Layout Model...")
 detectron_model = Detectron2LayoutModel(
-    'C:/Users/Deepika Ramesh/Projects/med_rag/config.yml',
+    r"C:\Users\Deepika Ramesh\Projects\med_rag\asserts\models\model_config.yaml",
     # r'C:/Users/Deepika Ramesh/Downloads/model_final.pth',
-    extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.8],
-    label_map={0: "None", 1: "text", 2: "title", 3: "list", 4: "table", 5: "figure"}
+    extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.7],
+    label_map={0: "figure"}
 )
 print("Model Loaded..!")

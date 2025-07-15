@@ -54,7 +54,7 @@ def format_docs(docs):
     )
 
 
-@app.get("/images/{image_id}")
+@app.get("/image/{image_id}")
 def get_image(image_id: str):
     file_path = os.path.join(IMAGE_PATH, f"{image_id}.png")
     if os.path.exists(file_path):

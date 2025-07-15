@@ -51,40 +51,81 @@ class Extraction(object):
         return image_urls
 
     @staticmethod
-    def crop_figures(layout: lp.Layout, image: np.ndarray):
-        Path(IMAGE_PATH).mkdir(parents=True, exist_ok=True)
-        figure_blocks = lp.Layout([b for b in layout if b.type == 'figure'])
+    def crop_figures(figure_blocks, image: np.ndarray):
         image_urls = []
+        height, width = image.shape[:2]
+
         for i, figure_block in enumerate(figure_blocks):
-            x1, y1, x2, y2 = int(figure_block.coordinates[0]), int(figure_block.coordinates[1]), \
-                int(figure_block.coordinates[2]), int(figure_block.coordinates[3])
-            image_id = str(uuid4())
-            cropped_figure = image[y1:y2, x1 - 20:x2 + 20]
-            cropped_img = Image.fromarray(cropped_figure)
-            cropped_img.save(f'{IMAGE_PATH}/{image_id}.png')
-            image_urls.append(f"{SERVER_URL}/{image_id}")
+            # Get coordinates and ensure they're within image bounds
+            x1 = max(0, int(figure_block.coordinates[0]))
+            y1 = max(0, int(figure_block.coordinates[1]))
+            x2 = min(width, int(figure_block.coordinates[2]))
+            y2 = min(height, int(figure_block.coordinates[3]))
+
+            if x1 < x2 and y1 < y2:
+                image_id = str(uuid4())
+                cropped_figure = image[y1:y2, x1:x2]
+                cropped_img = Image.fromarray(cropped_figure)
+
+                cropped_img.save(f'{IMAGE_PATH}/{image_id}.png')
+                image_urls.append(f"{SERVER_URL}/{image_id}")
+
         return image_urls
 
-    def extract_image_detectron(self, page_num: int = 0) -> lp.Layout:
-        image = np.asarray(pdf2image.convert_from_path(self.pdf_path)[page_num])
-        layout_result = self.model.detect(image)
-        image_urls = self.crop_figures(layout_result, image)
-        return image_urls
+    def generate_context_summary(self, image_path: Path, llm) -> str:
+        pass
 
-    def extract_and_save_image(self, page_num: List):
-        # image = np.asarray(pdf2image.convert_from_path(self.pdf_path, poppler_path=r"C:\poppler-24.08.0\Library\bin")[page_num])
-        pages = pdf2image.convert_from_path(self.pdf_path, poppler_path=r"C:\poppler-24.08.0\Library\bin")
-        Path(IMAGE_PATH).mkdir(parents=True, exist_ok=True)
-        for count, page in enumerate(pages):
-            if count in page_num:
-                layout_result = self.model.detect(page)
-                figure_blocks = lp.Layout([b for b in layout_result if b.type == 'figure'])
-                if figure_blocks:
-                    page.save(f'{IMAGE_PATH}/{str(uuid4())}.png')
-        # figure_blocks = lp.Layout([b for b in layout_result if b.type == 'figure'])
-        # if figure_blocks:
-        # Image.fromarray(image).save(f'{IMAGE_PATH}/{str(uuid4())}.png')
+    def detect_and_generate_context(
+            self,
+            page_number: int = 0,
+            image_path: str = "assets/images",
+            context_summary: bool = False,
+            poppler_path: str = r"C:\poppler-24.08.0\Library\bin"
+    ) -> List[Document]:
+        """Detect figures in PDF pages and generate context summaries.
 
+        Args:
+            page_number: Page to process (0 for all pages)
+            image_path: Directory to save extracted images
+            context_summary: Whether to generate context summaries
+            poppler_path: Path to poppler binaries
+        """
+        convert_kwargs = {
+            "pdf_path": self.pdf_path,
+            "poppler_path": poppler_path
+        }
+
+        if page_number:
+            convert_kwargs.update({
+                "first_page": page_number,
+                "last_page": page_number
+            })
+
+        pages = pdf2image.convert_from_path(**convert_kwargs)
+        documents = []
+        Path(image_path).mkdir(parents=True, exist_ok=True)
+
+        for page_idx, page in enumerate(pages):
+            layout_result = self.model.detect(np.array(page))
+            figure_blocks = lp.Layout([b for b in layout_result if b.type == 'figure'])
+
+            if figure_blocks:
+                image_name = f"page_{page_number or page_idx}_{uuid4()}"
+                image_path_full = Path(image_path) / f"{image_name}.png"
+                page.save(image_path_full)
+
+                # Extract figures if needed
+                # image_urls = self.crop_figures(figure_blocks, np.array(page))
+
+                if context_summary:
+                    documents.append(Document(
+                        page_content=self.generate_context_summary(image_path_full),
+                        metadata={
+                            "image_urls": f"{SERVER_URL}/image/{image_name}",
+                        }
+                    ))
+
+        return documents
 
 
 class Ingestion:
@@ -110,37 +151,6 @@ class Ingestion:
         """Extract information from image using LLM (placeholder)."""
         # TODO: Implement image summarization logic
         ...
-
-    # def generate_semantic_chunk(self, batch_size: int = 10):
-    #     file_id = f"{uuid4()}_{datetime.now()}"
-    #     documents = [self.pypdf_extraction.extract_text(page_no) for page_no in range(self.pypdf_extraction.length)]
-    #     semantic_chunker = SemanticChunker(self.embedder, breakpoint_threshold_type="percentile")
-    #     semantic_chunks = []
-    #     for i in range(0, len(documents), batch_size):
-    #         batch = documents[i:i + batch_size]
-    #         semantic_chunks.extend(semantic_chunker.create_documents(batch))
-    #         print("Processed batch from index", i, "to", i + batch_size)
-    #     all_semantic_chunks, ids = [], []
-    #     for chunk in semantic_chunks:
-    #         chunk_id = str(uuid4())
-    #         ids.append(chunk_id)
-    #         metadata = {
-    #             "file_id": file_id,
-    #             "chunk_id": chunk_id,
-    #         }
-    #         all_semantic_chunks.append(Document(
-    #             page_content=chunk.page_content,
-    #             metadata=metadata
-    #         ))
-    #         FileIngestion.insert(metadata).execute()
-    #     FileIngestionStatus.insert({
-    #         "file_id": file_id,
-    #         "file_name": self.file_name,
-    #         "file_url": f"{SERVER_URL}/pdf/{self.file_name}",
-    #         "status": "completed"
-    #     }).execute()
-    #     print("File ingestion done successfully for file:", self.file_name)
-    #     return all_semantic_chunks, ids
 
     def generate_semantic_chunk(self, batch_size: int = 30):
         file_id = f"{uuid4()}_{datetime.now()}"
