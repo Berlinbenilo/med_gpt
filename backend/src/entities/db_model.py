@@ -32,5 +32,12 @@ class Models(BaseModel):
     model_provider = FloatField()
 
 
+class ImageSummary(BaseModel):
+    file_id = CharField()
+    full_page_name = CharField()
+    cropped_image_name = CharField(primary_key=True)
+    summary = TextField()
+    file_name = CharField()
+
 sqlite_db.connect()
-sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models], safe=True)
+sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models, ImageSummary], safe=True)
