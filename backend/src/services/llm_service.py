@@ -4,7 +4,7 @@ from typing import Dict, List, Optional, Tuple
 from langchain_core.language_models import BaseChatModel
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.prompts import PromptTemplate
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from pydantic import BaseModel
 
 from backend.src.constants.properties import model_config
@@ -13,17 +13,25 @@ from backend.src.entities.db_model import Models
 
 def get_model(model_name: str) -> Tuple[Dict, str]:
     try:
+        print("get Selected model:", model_name)
         res = Models.get(Models.name == model_name)
         return model_config[res.name], res.model_provider
     except IndexError:
-        raise ValueError(f"Model {model_name} not found in the database. Please ensure it is registered before running the application.")
+        raise ValueError(
+            f"Model {model_name} not found in the database. Please ensure it is registered before running the application.")
 
 
 def llm_factory(model_name) -> BaseChatModel:
     model = None
     config, model_provider = get_model(model_name)
+    print(f"Using model: {model_name} with provider: {model_provider} and config: {config}")
     if model_provider == "openai" or model_provider == "fireworks":
         model = ChatOpenAI(**config)
+    if model_provider == "google":
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        model = ChatGoogleGenerativeAI(**config)
+    if model_provider == "azure":
+        model = AzureChatOpenAI(**config)
     return model
 
 
@@ -34,7 +42,7 @@ class LLMWrapper(object):
         if self.tools:
             self.llm = self.llm.bind_tools(self.tools)
 
-    def invoke_with_parser(self, prompt_template: str, placeholder_input: Dict = None,
+    def invoke_with_parser(self, prompt_template: str, llm=None, placeholder_input: Dict = None,
                            validator: Optional[BaseModel] = None,
                            stream: bool = False):
         _parser = JsonOutputParser(pydantic_object=validator) if validator else StrOutputParser()
@@ -43,7 +51,8 @@ class LLMWrapper(object):
             template=prompt_template,
             partial_variables={"format_instructions": _parser.get_format_instructions() if validator else ""},
         )
-        chain = prompt | self.llm | _parser
+        llm = llm if llm else self.llm
+        chain = prompt | llm | _parser
 
         if stream:
             return self._invoke_streaming(chain, placeholder_input or {})

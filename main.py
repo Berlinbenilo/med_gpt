@@ -15,13 +15,13 @@ from langchain_core.prompts import PromptTemplate
 from langgraph.checkpoint.memory import MemorySaver
 from pydantic import BaseModel, Field
 
-from backend.src.constants.config import vector_store, detectron_model
+from backend.src.constants.config import vector_store, azure_embedding
 from backend.src.constants.prompts import RAG_PROMPT
-from backend.src.constants.properties import IMAGE_PATH, PDF_PATH
+from backend.src.constants.properties import IMAGE_PATH, PDF_PATH, classifier_model
 from backend.src.entities.db_model import Models, FileIngestionStatus
 from backend.src.graphs.med_tutor import MedTutor
 from backend.src.services.llm_service import llm_factory
-from backend.src.services.pdf_service import Extraction, Ingestion
+from backend.src.services.pdf_service import Extraction, PDFIngestion
 
 warnings.filterwarnings("ignore", category=LangChainDeprecationWarning)
 
@@ -29,7 +29,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://348213d06995.ngrok-free.app"],
+    allow_origins=["http://localhost:5173", "https://376fa87969f6.ngrok-free.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,18 +62,6 @@ def get_image(image_id: str):
     return {"error": "File not found!"}
 
 
-@app.post("/pdf/to_image")
-async def ingest_pdf(file: UploadFile = File(...), page_num: List[int] = None):
-    temp_path = os.path.join(PDF_PATH, file.filename)
-    with open(temp_path, "wb") as buffer:
-        buffer.write(await file.read())
-
-    pdf_extraction = Extraction(temp_path, model=detectron_model)
-
-    pdf_extraction.extract_and_save_image(page_num= page_num)
-    return {"message": "Image extracted successfully", "page_num": page_num}
-
-
 @app.get("/pdf/{filename}")
 def get_pdf(filename: str):
     pdf_path = os.path.join("asserts/pdf", filename)
@@ -88,8 +76,8 @@ async def ingest_pdf(file: UploadFile = File(...)):
     with open(temp_path, "wb") as buffer:
         buffer.write(await file.read())
 
-    pdf_extraction = Extraction(temp_path, model=detectron_model)
-    ingestion_service = Ingestion(temp_path, collection=vector_store, pdf_extraction=pdf_extraction)
+    pdf_extraction = Extraction(temp_path)
+    ingestion_service = PDFIngestion(temp_path, collection=vector_store, pdf_extraction=pdf_extraction)
     result = ingestion_service.ingest_chunks()
     return {"message": "PDF ingested successfully", "ids": result.chunk_ids}
 
@@ -114,8 +102,8 @@ async def ingest_folder(pdf_item: PDF):
                 with open(pdf_file, "rb") as src, open(dest_path, "wb") as dst:
                     dst.write(src.read())
             try:
-                pdf_extraction = Extraction(dest_path, model=detectron_model)
-                ingestion_service = Ingestion(dest_path, collection=vector_store, pdf_extraction=pdf_extraction)
+                pdf_extraction = Extraction(dest_path)
+                ingestion_service = PDFIngestion(dest_path, collection=vector_store, pdf_extraction=pdf_extraction, embedder=azure_embedding)
                 result = ingestion_service.ingest_chunks()
                 all_results.append({"file": filename})
             finally:
@@ -145,8 +133,6 @@ async def search(query: str, model_name: str, top_k: int = 10):
 
 @app.post("/chat")
 async def chat(item: Chat):
-    print("Selected model ", item.config.get('model_name'))
-    print("Query: ", item.input_query)
     state = {
         "messages": [HumanMessage(content=item.input_query)],
         "model_config": item.config,
@@ -154,16 +140,16 @@ async def chat(item: Chat):
     }
     graph = MedTutor(collection=vector_store, model_config=item.config)
     response = await graph.arun(input_payload=state,
-                                config={"configurable": {"thread_id": "3"}},
+                                config={"configurable": {"thread_id": "1"}},
                                 memory=MemorySaver()
                                 )
-    return {"message": response, "status": True}
+    return {"message": response.content, "status": True}
 
 
 @app.get("/models")
 async def get_models():
     return {
-        "models": list(Models.select(Models.id, Models.name).dicts())
+        "models": list(Models.select(Models.id, Models.name).where(Models.name != classifier_model).dicts())
     }
 
 

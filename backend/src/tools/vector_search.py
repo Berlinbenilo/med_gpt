@@ -1,7 +1,7 @@
-from typing import Any, Type, Optional
+from typing import Any, Optional
 
-from langchain_core.callbacks import CallbackManagerForToolRun
-from langchain_core.tools import BaseTool
+from langchain_core.callbacks import CallbackManagerForToolRun, AsyncCallbackManagerForToolRun
+from langchain_core.tools import BaseTool, ArgsSchema
 from pydantic import BaseModel, Field
 
 
@@ -13,20 +13,20 @@ class VectorSearchInput(BaseModel):
 class VectorSearch(BaseTool):
     name: str = "vector_search"
     description: str = (
-        "Search for relevant documents in the vector database based on the provided query. "
-        "Returns a list of documents with their content, file names, page numbers, and image URLs."
+        "REQUIRED: Use this tool to search for relevant information in the vector database. "
+        "This tool MUST be used for every user query to find case studies, medical and other relevant information. "
+        "Input: query (string) - the search query, top_k (int) - number of results to return."
     )
-    args_schema: Type[BaseModel] = VectorSearchInput
+    args_schema: Optional[ArgsSchema] = VectorSearchInput
     collection: Any
 
     def _run(self, query: str, top_k: int = 50, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        print("Running synchronous vector search with query:", query)
         results = self.collection.similarity_search(query, k=50)
         contents = "\n".join([doc.page_content for doc in results])
         return contents
 
-    async def _arun(self, query: str, top_k: int = 50, run_manager: Optional[CallbackManagerForToolRun] = None) -> str:
-        print("Running async vector search with query:", query)
+    async def _arun(self, query: str, top_k: int = 50,
+                    run_manager: Optional[AsyncCallbackManagerForToolRun] = None) -> str:
         results = await self.collection.asimilarity_search(query, k=50)
         contents = "\n".join([doc.page_content for doc in results])
         return contents

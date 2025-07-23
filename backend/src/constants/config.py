@@ -1,15 +1,25 @@
-import layoutparser as lp
-from layoutparser.models import Detectron2LayoutModel
+import os
+
+from dotenv import load_dotenv
 from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import AzureOpenAIEmbeddings
 from langchain_qdrant import FastEmbedSparse, QdrantVectorStore, RetrievalMode
 from qdrant_client import QdrantClient, models
 from qdrant_client.http.models import Distance, SparseVectorParams, VectorParams
+
+load_dotenv()
+
+azure_embedding = AzureOpenAIEmbeddings(
+    model="text-embedding-ada-002",  # Can specify model with new text-embedding-3 models
+    azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT_EMBED"),
+    api_key=os.getenv("AZURE_OPENAI_API_KEY_EMBED"),
+    api_version=os.getenv("OPENAI_API_VERSION_EMBED"),
+)
 
 sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
 
 print("Loading Qdrant client and initializing collection...")
 client = QdrantClient(host="localhost", port=6333)
-# client = QdrantClient(path="./qdrant_storage", prefer_grpc=True)
 
 collection_name = "pdf_collection"
 if collection_name not in [c.name for c in client.get_collections().collections]:
@@ -22,24 +32,15 @@ if collection_name not in [c.name for c in client.get_collections().collections]
     )
 print("Initialized Qdrant client and collection.")
 print("Loading embeddings...")
-embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+huggingface_embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
+print("Initializing vector store...")
 vector_store = QdrantVectorStore(
     client=client,
     collection_name=collection_name,
-    embedding=embeddings,
+    embedding=huggingface_embedder,
     sparse_embedding=sparse_embeddings,
     retrieval_mode=RetrievalMode.HYBRID,
     vector_name="dense",
     sparse_vector_name="sparse",
 )
-
-print("Embeddings loaded and vector store initialized.")
-print("Loading Detectron2 Layout Model...")
-detectron_model = Detectron2LayoutModel(
-    r"C:\Users\Deepika Ramesh\Projects\med_rag\asserts\models\model_config.yaml",
-    # r'C:/Users/Deepika Ramesh/Downloads/model_final.pth',
-    extra_config=["MODEL.ROI_HEADS.SCORE_THRESH_TEST", 0.7],
-    label_map={0: "figure"}
-)
-print("Model Loaded..!")

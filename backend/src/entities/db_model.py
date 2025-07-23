@@ -33,11 +33,10 @@ class Models(BaseModel):
 
 
 class ImageSummary(BaseModel):
-    file_id = CharField()
-    full_page_name = CharField()
-    cropped_image_name = CharField(primary_key=True)
+    image_id = CharField(primary_key=True)
+    cropped_image_name = TextField()
     summary = TextField()
-    file_name = CharField()
+
 
 sqlite_db.connect()
 sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models, ImageSummary], safe=True)

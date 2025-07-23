@@ -3,7 +3,6 @@ from langgraph.types import Command
 
 from backend.src.agents.base import BaseAgent
 from backend.src.constants.prompts import ALL_PROMPTS
-from backend.src.entities.state_model import MedTutorGraphState
 
 
 class UnstructuredAgent(BaseAgent):
@@ -13,18 +12,10 @@ class UnstructuredAgent(BaseAgent):
         super().__init__(state, tools, model_config)
 
     async def arun(self):
-        print("Unstructured Agent invoked")
-
         messages = [("user", self.state['messages'][-1].content)]
-        print("state messages -->", self.state['messages'][-1])
-        print("type -->", self.state.get('medical_type'))
+
         if not self.prompt:
-            print("No prompt provided, using default prompt for medical type:", self.state.get('medical_type'))
             self.prompt = ALL_PROMPTS[self.state.get('medical_type')]
-
-        if self.tools:
-            self.parser_obj.llm = self.parser_obj.llm.bind_tools(self.tools)
-
-        graph = create_react_agent(self.parser_obj.llm, self.tools, prompt=self.prompt, state_schema=MedTutorGraphState)
-        result = await graph.ainvoke({"messages": messages})
+        agent = create_react_agent(self.parser_obj.llm, self.tools, debug=True, prompt=self.prompt)
+        result = await agent.ainvoke({"messages": messages})
         return Command(update={"messages": [result["messages"][-1].content]}, goto="__end__")
