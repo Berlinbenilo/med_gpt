@@ -1,6 +1,5 @@
-const API_BASE_URL = 'http://4.247.31.117:8000';
-// const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://4.247.31.117:8000';
-
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://4.247.31.117:8000';
+console.log("Loaded API URL:", import.meta.env.VITE_API_URL);
 
 export interface ChatRequest {
   input_query: string;
