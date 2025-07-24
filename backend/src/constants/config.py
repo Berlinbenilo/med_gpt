@@ -7,7 +7,7 @@ from langchain_qdrant import FastEmbedSparse, QdrantVectorStore, RetrievalMode
 from qdrant_client import QdrantClient, models
 from qdrant_client.http.models import Distance, SparseVectorParams, VectorParams
 
-load_dotenv()
+load_dotenv(override=True)
 
 azure_embedding = AzureOpenAIEmbeddings(
     model="text-embedding-ada-002",  # Can specify model with new text-embedding-3 models
@@ -19,9 +19,9 @@ azure_embedding = AzureOpenAIEmbeddings(
 sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
 
 print("Loading Qdrant client and initializing collection...")
-client = QdrantClient(host="localhost", port=6333)
-
-collection_name = "pdf_collection"
+client = QdrantClient(host=os.getenv("QDRANT_HOST"), port=os.getenv("QDRANT_PORT"))
+print(os.getenv("QDRANT_HOST"))
+collection_name = "pdf_collection-7963541598217832"
 if collection_name not in [c.name for c in client.get_collections().collections]:
     client.create_collection(
         collection_name=collection_name,

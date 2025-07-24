@@ -14,7 +14,7 @@ class VectorSearch(BaseTool):
     name: str = "vector_search"
     description: str = (
         "REQUIRED: Use this tool to search for relevant information in the vector database. "
-        "This tool MUST be used for every user query to find case studies, medical and other relevant information. "
+        "This tool MUST be used for all user queries that require information retrieval. Always use this tool "
         "Input: query (string) - the search query, top_k (int) - number of results to return."
     )
     args_schema: Optional[ArgsSchema] = VectorSearchInput

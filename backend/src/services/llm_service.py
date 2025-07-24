@@ -14,8 +14,15 @@ from backend.src.entities.db_model import Models
 def get_model(model_name: str) -> Tuple[Dict, str]:
     try:
         print("get Selected model:", model_name)
-        res = Models.get(Models.name == model_name)
-        return model_config[res.name], res.model_provider
+        # res = Models.get(Models.name == model_name)
+        # return model_config[res.name], res.model_provider
+        models = {'deepseek-r1-0528': "fireworks",
+                'gpt-4.1': "azure",
+                'llama4-maverick-instruct-basic': "fireworks",
+                'gemini-2.5-pro-preview-03-25': "google",
+                "deepseek-v3-0324": "fireworks"}
+        return model_config[model_name], models[model_name]
+
     except IndexError:
         raise ValueError(
             f"Model {model_name} not found in the database. Please ensure it is registered before running the application.")
@@ -36,8 +43,8 @@ def llm_factory(model_name) -> BaseChatModel:
 
 
 class LLMWrapper(object):
-    def __init__(self, model_name, tools: List = None):
-        self.llm = llm_factory(model_name=model_name)
+    def __init__(self, model_name=None, llm=None, tools: List = None):
+        self.llm = llm if llm else llm_factory(model_name)
         self.tools = tools
         if self.tools:
             self.llm = self.llm.bind_tools(self.tools)

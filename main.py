@@ -1,7 +1,7 @@
 import glob
 import os
 import warnings
-from typing import Dict, List
+from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI
@@ -17,8 +17,8 @@ from pydantic import BaseModel, Field
 
 from backend.src.constants.config import vector_store, azure_embedding
 from backend.src.constants.prompts import RAG_PROMPT
-from backend.src.constants.properties import IMAGE_PATH, PDF_PATH, classifier_model
-from backend.src.entities.db_model import Models, FileIngestionStatus
+from backend.src.constants.properties import IMAGE_PATH, PDF_PATH
+from backend.src.entities.db_model import FileIngestionStatus
 from backend.src.graphs.med_tutor import MedTutor
 from backend.src.services.llm_service import llm_factory
 from backend.src.services.pdf_service import Extraction, PDFIngestion
@@ -29,7 +29,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://376fa87969f6.ngrok-free.app"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,6 +43,7 @@ class PDF(BaseModel):
 class Chat(BaseModel):
     input_query: str
     config: Dict
+    session_id: str = Field(default="1", description="Unique session ID for the chat")
 
 
 def format_docs(docs):
@@ -103,7 +104,8 @@ async def ingest_folder(pdf_item: PDF):
                     dst.write(src.read())
             try:
                 pdf_extraction = Extraction(dest_path)
-                ingestion_service = PDFIngestion(dest_path, collection=vector_store, pdf_extraction=pdf_extraction, embedder=azure_embedding)
+                ingestion_service = PDFIngestion(dest_path, collection=vector_store, pdf_extraction=pdf_extraction,
+                                                 embedder=azure_embedding)
                 result = ingestion_service.ingest_chunks()
                 all_results.append({"file": filename})
             finally:
@@ -138,9 +140,10 @@ async def chat(item: Chat):
         "model_config": item.config,
         "remaining_steps": 5
     }
-    graph = MedTutor(collection=vector_store, model_config=item.config)
+    print("Chat config:", item.config)
+    graph = MedTutor(collection=vector_store, model_config=item.config, session=item.session_id)
     response = await graph.arun(input_payload=state,
-                                config={"configurable": {"thread_id": "1"}},
+                                config={"configurable": {"thread_id": item.session_id}},
                                 memory=MemorySaver()
                                 )
     return {"message": response.content, "status": True}
@@ -149,7 +152,13 @@ async def chat(item: Chat):
 @app.get("/models")
 async def get_models():
     return {
-        "models": list(Models.select(Models.id, Models.name).where(Models.name != classifier_model).dicts())
+        "models": [
+            {'id': 'deepseek-r1-0528', 'name': 'deepseek-r1-0528'},
+            {'id': 'gpt-4.1', 'name': 'gpt-4.1'},
+            {'id': 'llama4-maverick-instruct-basic', 'name': 'llama4-maverick-instruct-basic'},
+            {'id': 'gemini-2.5-pro-preview-03-25', 'name': 'gemini-2.5-pro-preview-03-25'},
+        ]
+        # "models": list(Models.select(Models.id, Models.name).where(Models.name != classifier_model).dicts())
     }
 
 

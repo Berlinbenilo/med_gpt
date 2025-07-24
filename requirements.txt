@@ -1,6 +1,5 @@
 peewee~=3.18.1
 langchain-core~=0.3.62
-PyPDF2~=3.0.1
 fastapi~=0.115.12
 qdrant-client~=1.14.2
 fastembed
@@ -16,6 +15,9 @@ pdf2image~=1.17.0
 opencv-python~=4.11.0.86
 torch~=2.7.1
 pillow~=11.2.1
-detectron2~=0.6
 pathlib~=1.0.1
 langchain_google_genai
+gunicorn
+sentence-transformers
+PyPDF2
+python-multipart

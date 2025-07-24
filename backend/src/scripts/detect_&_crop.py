@@ -30,7 +30,7 @@ def detect_figures(predictor, image_path):
     return outputs["instances"], out.get_image()[:, :, ::-1]
 
 
-def crop_detected_regions(instances, image_path, image_id = None, label="Figure", output_folder="cropped"):
+def crop_detected_regions(instances, image_path, image_id=None, label="Figure", output_folder="cropped"):
     os.makedirs(output_folder, exist_ok=True)
     boxes = instances.pred_boxes.tensor.cpu().numpy()
     classes = instances.pred_classes.cpu().numpy()

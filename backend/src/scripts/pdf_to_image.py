@@ -2,10 +2,10 @@ import os
 import uuid
 
 import PyPDF2
+import pandas as pd
 from pdf2image import convert_from_path
 
 from backend.src.entities.db_model import ImageIngestion
-import pandas as pd
 
 
 def _pdf_to_image(pdf_path, output_folder="data/images", dpi=200, file_id=None, file_name=None, batch_size=100):
@@ -45,7 +45,7 @@ def main():
         if note:
             file_name = note.strip()
             file_id = str(uuid.uuid4())
-            pdf_path = fr"C:\Users\Deepika Ramesh\Downloads\medical_data\pdfs\{file_name}.pdf"
+            pdf_path = fr"C:\Users\Deepika Ramesh\Downloads\medical_data\pdfs\{file_name}"
             _pdf_to_image(pdf_path, output_folder=output_path, file_id=file_id, file_name=file_name)
             print(f"Processed {file_name} with ID {file_id}")
 

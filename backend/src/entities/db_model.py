@@ -1,3 +1,5 @@
+import datetime
+
 from peewee import *
 
 sqlite_db = SqliteDatabase('database.db')
@@ -38,5 +40,13 @@ class ImageSummary(BaseModel):
     summary = TextField()
 
 
+class ConversationHistory(BaseModel):
+    conversation_id = CharField()
+    user_query = TextField()
+    response = TextField()
+    timestamp = DateTimeField(default=datetime.datetime.now())
+
+
 sqlite_db.connect()
-sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models, ImageSummary], safe=True)
+sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models, ImageSummary, ConversationHistory],
+                        safe=True)

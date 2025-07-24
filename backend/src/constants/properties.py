@@ -45,7 +45,7 @@ model_config = {
         "model": "o3-mini",
         "azure_endpoint": os.getenv("AZURE_OPENAI_ENDPOINT_CHAT"),
         "api_key": os.getenv("AZURE_OPENAI_API_KEY_CHAT"),
-        "api_version":  "2024-12-01-preview",
+        "api_version": "2024-12-01-preview",
     },
     "o4-mini": {
         "model": "o4-mini",
@@ -54,4 +54,3 @@ model_config = {
         "api_version": "2024-12-01-preview",
     },
 }
-

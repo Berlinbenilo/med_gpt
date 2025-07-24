@@ -5968,3 +5968,22 @@ Remember: Always use the "vector_search" tool before providing your final answer
 - Make connections between theory and practice
 
 Remember: Your goal is to bring concepts to life through compelling, detailed real-world examples that provide both educational value and practical insights. Always use this "vector_search" tool for answer user query."""
+
+QUESTION_REPHRASER_PROMPT = """You are a question rephraser. Your task is to rephrase the user's question based on the previous conversation context.
+
+example:
+user: What is the treatment for diabetes?
+rephrased_query: What is the treatment for diabetes?
+
+user: What are the remedies for it?
+rephrased_query: What are the remedies for diabetes?
+
+the user query is: 
+{user_query}
+
+the previous conversation context is: 
+{previous_conversation_context}
+
+Always return the rephrased query in the format:
+{format_instructions}
+"""
