@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend-deployment
-          image: berlinbenilo2105/backendmedgpt:v2
+          image: berlinbenilo2105/backendmedgpt:v1
           ports:
             - containerPort: 8000
           env:
@@ -39,7 +39,7 @@ spec:
             - name: SERVER_URL
               value: "http://localhost:8000"
             - name: QDRANT_HOST
-              value: "52.172.101.254"
+              value: "qdrant-service"
             - name: QDRANT_PORT
               value: "6333"
 ---

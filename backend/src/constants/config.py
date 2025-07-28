@@ -19,7 +19,7 @@ azure_embedding = AzureOpenAIEmbeddings(
 sparse_embeddings = FastEmbedSparse(model_name="Qdrant/bm25")
 
 print("Loading Qdrant client and initializing collection...")
-client = QdrantClient(host=os.getenv("QDRANT_HOST"), port=os.getenv("QDRANT_PORT"))
+client = QdrantClient(host=os.getenv("QDRANT_HOST"), port=int(os.getenv("QDRANT_PORT", 6333)))
 print(os.getenv("QDRANT_HOST"))
 collection_name = "pdf_collection-7963541598217832"
 if collection_name not in [c.name for c in client.get_collections().collections]:
