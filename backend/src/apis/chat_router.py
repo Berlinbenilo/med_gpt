@@ -19,12 +19,14 @@ async def chat(item: Chat):
 
     # Ensure session exists
     session = ChatService.get_session(item.session_id)
+    message_count = 0
     if not session:
         session = ChatService.create_session(
             user_id=item.user_id,
             session_id=item.session_id,
             model_config=item.config
         )
+        message_count = 1
         print(f"Created new session: {item.session_id}")
 
     # Store user message
@@ -34,8 +36,7 @@ async def chat(item: Chat):
         content=item.input_query
     )
 
-    # Update session title if this is the first user message
-    if session.message_count == 1:
+    if message_count == 1:
         title = ChatService.generate_session_title(item.input_query)
         ChatService.update_session_title(item.session_id, title)
 
@@ -84,12 +85,14 @@ async def chat_stream(item: Chat):
 
     # Ensure session exists
     session = ChatService.get_session(item.session_id)
+    message_count = 0
     if not session:
         session = ChatService.create_session(
             user_id=item.user_id,
             session_id=item.session_id,
             model_config=item.config
         )
+        message_count = 1
         print(f"Created new session: {item.session_id}")
 
     # Store user message
@@ -100,7 +103,7 @@ async def chat_stream(item: Chat):
     )
 
     # Update session title if this is the first user message
-    if session.message_count == 1:
+    if message_count == 1:
         title = ChatService.generate_session_title(item.input_query)
         ChatService.update_session_title(item.session_id, title)
 

@@ -40,9 +40,7 @@ class ImageSummary(BaseModel):
     summary = TextField()
 
 
-# Improved chat session models
 class ChatSession(BaseModel):
-    """Represents a chat session with metadata"""
     session_id = CharField(primary_key=True)
     user_id = CharField()
     title = CharField(default="New Chat")
@@ -53,7 +51,6 @@ class ChatSession(BaseModel):
 
 
 class ChatMessage(BaseModel):
-    """Represents individual messages in a chat session"""
     message_id = CharField(primary_key=True)
     session_id = CharField()
     role = CharField()  # 'user' or 'assistant'
@@ -69,18 +66,7 @@ class ChatMessage(BaseModel):
         )
 
 
-# Keep the original for backward compatibility, but mark as deprecated
-class ConversationHistory(BaseModel):
-    """DEPRECATED: Use ChatSession and ChatMessage instead"""
-    id = AutoField(primary_key=True)
-    user_id = CharField()
-    conversation_id = CharField()
-    user_query = TextField()
-    response = TextField()
-    timestamp = DateTimeField(default=datetime.datetime.now)
-
-
 sqlite_db.connect()
-sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models, ImageSummary, 
-                        ChatSession, ChatMessage, ConversationHistory],
+sqlite_db.create_tables([ImageIngestion, FileIngestion, FileIngestionStatus, Models, ImageSummary,
+                         ChatSession, ChatMessage],
                         safe=True)

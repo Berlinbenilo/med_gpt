@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Dict
 
 from langchain_qdrant import QdrantVectorStore
@@ -12,7 +11,6 @@ from backend.src.agents.unstructured import UnstructuredAgent
 from backend.src.constants.prompts import MEDICAL_QUESTION_CLASSIFIER_PROMPT, MEDICAL_QUESTION_ROUTER_PROMPT, \
     SHORT_ANSWER_PROMPT, CASE_STUDIES_PROMPT, QUESTION_REPHRASER_PROMPT
 from backend.src.constants.properties import classifier_model
-from backend.src.entities.db_model import ConversationHistory
 from backend.src.entities.state_model import MedTutorGraphState
 from backend.src.services.llm_service import llm_factory
 from backend.src.tools.vector_search import VectorSearch
