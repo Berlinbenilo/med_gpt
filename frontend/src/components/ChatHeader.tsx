@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, Wifi, WifiOff, Zap, Settings } from 'lucide-react';
+import { MessageCircle, Wifi, WifiOff, Zap, Settings, Menu } from 'lucide-react';
 import { Model } from '../services/chatApi';
 
 interface ChatHeaderProps {
@@ -9,6 +9,7 @@ interface ChatHeaderProps {
   setModel?: (model: string) => void;
   isStreaming?: boolean;
   setIsStreaming?: (streaming: boolean) => void;
+  onToggleSidebar?: () => void;
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({ 
@@ -17,7 +18,8 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   selectedModel,
   setModel,
   isStreaming = true,
-  setIsStreaming
+  setIsStreaming,
+  onToggleSidebar
 }) => {
   const selectedModelData = modelList?.find(m => m.id === selectedModel);
   
@@ -25,6 +27,15 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
     <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
+          {/* Sidebar Toggle Button */}
+          <button
+            onClick={onToggleSidebar}
+            className=" p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            title="Toggle sidebar"
+          >
+            <Menu size={20} className="text-gray-600" />
+          </button>
+          
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
             <MessageCircle size={20} className="text-white" />
           </div>

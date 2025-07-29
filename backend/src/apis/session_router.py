@@ -1,7 +1,34 @@
 from fastapi import APIRouter, HTTPException
-from typing import Optional
+from typing import Optional, List, Dict
+from pydantic import BaseModel
 
 from backend.src.services.chat_service import ChatService
+
+# Request/Response models for better API documentation
+class SessionCreateRequest(BaseModel):
+    user_id: str
+    title: str = "New Chat"
+    model_config: Optional[Dict] = None
+
+class SessionUpdateTitleRequest(BaseModel):
+    title: str
+
+class SessionResponse(BaseModel):
+    session_id: str
+    title: str
+    created_at: str
+    updated_at: str
+    message_count: int
+
+class SessionWithMessagesResponse(BaseModel):
+    session_id: str
+    user_id: str
+    title: str
+    created_at: str
+    updated_at: str
+    message_count: int
+    model_config: Optional[Dict]
+    messages: List[Dict]
 
 router = APIRouter(tags=["Session"])
 
@@ -59,7 +86,7 @@ async def delete_session(user_id: str, session_id: str):
 
 
 @router.put("/sessions/{user_id}/{session_id}/title")
-async def update_session_title(user_id: str, session_id: str, title: str):
+async def update_session_title(user_id: str, session_id: str, request: SessionUpdateTitleRequest):
     """Update session title"""
     # Verify session exists and belongs to user
     session = ChatService.get_session(session_id)
@@ -69,7 +96,7 @@ async def update_session_title(user_id: str, session_id: str, title: str):
     if session.user_id != user_id:
         raise HTTPException(status_code=403, detail="Access denied")
     
-    success = ChatService.update_session_title(session_id, title)
+    success = ChatService.update_session_title(session_id, request.title)
     if success:
         return {"message": "Title updated successfully"}
     else:

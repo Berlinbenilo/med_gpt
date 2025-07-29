@@ -55,8 +55,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming =
           >
             {message.content}
           </ReactMarkdown>
-          {isStreaming && (
-            <span className="inline-block w-2 h-4 bg-blue-500 ml-1 animate-pulse"></span>
+          {isStreaming && message.content?.length === 0 && (
+            <div className="flex items-center space-x-1">
+                      <span className="dot animate-bounce">
+                        <span className="flex w-2 h-2 bg-[#4f4f4f33] rounded-full"></span>
+                      </span>
+                      <span className="dot animate-bounce delay-100">
+                        <span className="flex w-2 h-2 bg-[#4f4f4f33] rounded-full"></span>
+                      </span>
+                      <span className="dot animate-bounce delay-200">
+                        <span className="flex w-2 h-2 bg-[#4f4f4f33] rounded-full"></span>
+                      </span>
+                    </div>
           )}
         </div>
         <div className={`text-xs text-gray-500 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
