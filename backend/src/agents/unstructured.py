@@ -13,7 +13,6 @@ class UnstructuredAgent(BaseAgent):
 
     async def arun(self):
         messages = [("user", self.state['messages'][-1].content)]
-
         if not self.prompt:
             self.prompt = ALL_PROMPTS[self.state.get('medical_type')]
         if self.tools:
@@ -21,3 +20,16 @@ class UnstructuredAgent(BaseAgent):
         agent = create_react_agent(model=self.llm, tools=self.tools, debug=True, prompt=self.prompt)
         result = await agent.ainvoke({"messages": messages})
         return Command(update={"messages": [result["messages"][-1].content]}, goto="__end__")
+
+    async def astream(self):
+        messages = [("user", self.state['messages'][-1].content)]
+
+        if not self.prompt:
+            self.prompt = ALL_PROMPTS[self.state.get('medical_type')]
+
+        if self.tools:
+            self.llm = self.llm.bind_tools(self.tools)
+
+        agent = create_react_agent(model=self.llm, tools=self.tools, debug=True, prompt=self.prompt)
+        async for chunk in agent.astream({"messages": messages}):
+            yield chunk

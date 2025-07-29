@@ -1,17 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { ChatInput } from './ChatInput';
 import { ChatHeader } from './ChatHeader';
 import { TypingIndicator } from './TypingIndicator';
 import { Message } from '../types/chat';
-import { ChatApiService } from '../services/chatApi';
-
+import { ChatApiService, Model } from '../services/chatApi';
 
 export const Chat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hello! I'm your AI assistant. How can I help you today?",
+      content: "Hello! I'm MediTutor AI, your medical knowledge assistant. I can help you with medical questions, explain concepts, and provide educational information. How can I assist you today?",
       role: 'assistant',
       timestamp: new Date(),
     },
@@ -20,10 +19,14 @@ export const Chat: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(true);
   const [model, setModel] = useState<string>("deepseek-r1-0528"); // Default model
-  const [modelList, setModelList] = useState<any[]>(); // Default model
+  const [modelList, setModelList] = useState<Model[]>([]); // Model list
+  const [isStreaming, setIsStreaming] = useState<boolean>(true); // Streaming mode
+  const [currentStreamingMessage, setCurrentStreamingMessage] = useState<string>('');
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatApiService = ChatApiService.getInstance();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -39,8 +42,10 @@ export const Chat: React.FC = () => {
       try {
         const models = await chatApiService.fetchModels();
         console.log("models", models);
-        setModelList(models?.models);
-        // setModelList(models);
+        setModelList(models);
+        if (models.length > 0 && !model) {
+          setModel(models[0].id);
+        }
       } catch (err) {
         console.error('Error fetching models:', err);
       }
@@ -49,9 +54,19 @@ export const Chat: React.FC = () => {
     fetchModels();
   }, [chatApiService]);
 
-  console.log("models", model);
+  // Effect to scroll when streaming message updates
+  useEffect(() => {
+    if (currentStreamingMessage) {
+      scrollToBottom();
+    }
+  }, [currentStreamingMessage]);
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = useCallback(async (content: string) => {
+    // Cancel any ongoing streaming
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     const userMessage: Message = {
       id: Date.now().toString(),
       content,
@@ -62,7 +77,17 @@ export const Chat: React.FC = () => {
     setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
     setError(null);
+    setCurrentStreamingMessage('');
+    setStreamingMessageId(null);
 
+    if (isStreaming) {
+      await handleStreamingResponse(content);
+    } else {
+      await handleStandardResponse(content);
+    }
+  }, [model, isStreaming]);
+
+  const handleStandardResponse = async (content: string) => {
     try {
       const response = await chatApiService.sendMessage(content, model);
       
@@ -76,38 +101,121 @@ export const Chat: React.FC = () => {
       setMessages(prev => [...prev, assistantMessage]);
       setIsConnected(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      setIsConnected(false);
-      
-      // Add error message to chat
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: 'Sorry, I encountered an error processing your request. Please check your connection and try again.',
-        role: 'assistant',
-        timestamp: new Date(),
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
+      handleError(err);
     } finally {
       setIsLoading(false);
     }
   };
-console.log("khbmjvmngv")
+
+  const handleStreamingResponse = async (content: string) => {
+    try {
+      abortControllerRef.current = new AbortController();
+      const messageId = (Date.now() + 1).toString();
+      setStreamingMessageId(messageId);
+      
+      // Add empty assistant message that will be updated
+      const assistantMessage: Message = {
+        id: messageId,
+        content: '',
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      let fullContent = '';
+      
+      for await (const chunk of chatApiService.sendMessageStream(content, model)) {
+        if (abortControllerRef.current?.signal.aborted) {
+          break;
+        }
+        
+        fullContent += chunk;
+        setCurrentStreamingMessage(fullContent);
+        
+        // Update the message in the messages array
+        setMessages(prev => 
+          prev.map(msg => 
+            msg.id === messageId 
+              ? { ...msg, content: fullContent }
+              : msg
+          )
+        );
+      }
+      
+      setIsConnected(true);
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setIsLoading(false);
+      setCurrentStreamingMessage('');
+      setStreamingMessageId(null);
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleError = (err: unknown) => {
+    setError(err instanceof Error ? err.message : 'An error occurred');
+    setIsConnected(false);
+    
+    // Add error message to chat
+    const errorMessage: Message = {
+      id: (Date.now() + 2).toString(),
+      content: 'Sorry, I encountered an error processing your request. Please check your connection and try again.',
+      role: 'assistant',
+      timestamp: new Date(),
+    };
+    
+    setMessages(prev => [...prev, errorMessage]);
+  };
+
+  const handleNewChat = () => {
+    setMessages([
+      {
+        id: '1',
+        content: "Hello! I'm MediTutor AI, your medical knowledge assistant. I can help you with medical questions, explain concepts, and provide educational information. How can I assist you today?",
+        role: 'assistant',
+        timestamp: new Date(),
+      },
+    ]);
+    chatApiService.resetSession();
+    setError(null);
+    setCurrentStreamingMessage('');
+    setStreamingMessageId(null);
+  };
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <ChatHeader isConnected={isConnected}  modelList={modelList} setModel={setModel}/>
+      <ChatHeader 
+        isConnected={isConnected}
+        modelList={modelList}
+        selectedModel={model}
+        setModel={setModel}
+        isStreaming={isStreaming}
+        setIsStreaming={setIsStreaming}
+      />
       
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-4 py-6">
           {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatMessage 
+              key={message.id} 
+              message={message} 
+              isStreaming={message.id === streamingMessageId}
+            />
           ))}
           
-          {isLoading && <TypingIndicator />}
+          {isLoading && !streamingMessageId && <TypingIndicator />}
           
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-              <strong>Error:</strong> {error}
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm flex justify-between items-center">
+              <div>
+                <strong>Error:</strong> {error}
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="text-red-600 hover:text-red-800 font-medium text-sm"
+              >
+                Dismiss
+              </button>
             </div>
           )}
           
@@ -115,7 +223,16 @@ console.log("khbmjvmngv")
         </div>
       </div>
       
-      <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+      <div className="border-t border-gray-200 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <ChatInput 
+            onSendMessage={handleSendMessage} 
+            disabled={isLoading} 
+            onNewChat={handleNewChat}
+            streamingMode={isStreaming}
+          />
+        </div>
+      </div>
     </div>
   );
 };

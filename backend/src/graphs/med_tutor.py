@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Dict
 
 from langchain_qdrant import QdrantVectorStore
@@ -11,14 +12,15 @@ from backend.src.agents.unstructured import UnstructuredAgent
 from backend.src.constants.prompts import MEDICAL_QUESTION_CLASSIFIER_PROMPT, MEDICAL_QUESTION_ROUTER_PROMPT, \
     SHORT_ANSWER_PROMPT, CASE_STUDIES_PROMPT, QUESTION_REPHRASER_PROMPT
 from backend.src.constants.properties import classifier_model
+from backend.src.entities.db_model import ConversationHistory
 from backend.src.entities.state_model import MedTutorGraphState
 from backend.src.services.llm_service import llm_factory
 from backend.src.tools.vector_search import VectorSearch
 
-llm_registry = {'deepseek-r1-0528': llm_factory('deepseek-r1-0528'),
-                'gpt-4.1': llm_factory('gpt-4.1'),
-                'llama4-maverick-instruct-basic': llm_factory('llama4-maverick-instruct-basic'),
-                'gemini-2.5-pro-preview-03-25': llm_factory('gemini-2.5-pro-preview-03-25'),
+llm_registry = {'deepseek-r1-0528': llm_factory('deepseek-r1-0528', stream= True),
+                'gpt-4.1': llm_factory('gpt-4.1', stream= True),
+                'llama4-maverick-instruct-basic': llm_factory('llama4-maverick-instruct-basic', stream= True),
+                'gemini-2.5-pro-preview-03-25': llm_factory('gemini-2.5-pro-preview-03-25', stream= True),
                 "deepseek-v3-0324": llm_factory('deepseek-v3-0324')}
 
 
@@ -118,3 +120,8 @@ class MedTutor(object):
         app = self._create_graph(memory=memory)
         response = await app.ainvoke(input_payload, config=config)
         return response['messages'][-1]
+
+    async def astream(self, input_payload, memory, config=None):
+        app = self._create_graph(memory=memory)
+        async for event in app.astream_events(input_payload, config=config):
+            yield event

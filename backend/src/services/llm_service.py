@@ -8,7 +8,6 @@ from langchain_openai import ChatOpenAI, AzureChatOpenAI
 from pydantic import BaseModel
 
 from backend.src.constants.properties import model_config
-from backend.src.entities.db_model import Models
 
 
 def get_model(model_name: str) -> Tuple[Dict, str]:
@@ -28,17 +27,17 @@ def get_model(model_name: str) -> Tuple[Dict, str]:
             f"Model {model_name} not found in the database. Please ensure it is registered before running the application.")
 
 
-def llm_factory(model_name) -> BaseChatModel:
+def llm_factory(model_name, stream = False) -> BaseChatModel:
     model = None
     config, model_provider = get_model(model_name)
     print(f"Using model: {model_name} with provider: {model_provider} and config: {config}")
     if model_provider == "openai" or model_provider == "fireworks":
-        model = ChatOpenAI(**config)
+        model = ChatOpenAI(**config, streaming= stream)
     if model_provider == "google":
         from langchain_google_genai import ChatGoogleGenerativeAI
         model = ChatGoogleGenerativeAI(**config)
     if model_provider == "azure":
-        model = AzureChatOpenAI(**config)
+        model = AzureChatOpenAI(**config, streaming= stream)
     return model
 
 

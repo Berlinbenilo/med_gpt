@@ -1,14 +1,15 @@
 import React from 'react';
-import { User, Bot } from 'lucide-react';
+import { User, Bot, Zap } from 'lucide-react';
 import { Message } from '../types/chat';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 interface ChatMessageProps {
   message: Message;
+  isStreaming?: boolean;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = ({ message, isStreaming = false }) => {
   const isUser = message.role === 'user';
   
   return (
@@ -54,6 +55,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           >
             {message.content}
           </ReactMarkdown>
+          {isStreaming && (
+            <span className="inline-block w-2 h-4 bg-blue-500 ml-1 animate-pulse"></span>
+          )}
         </div>
         <div className={`text-xs text-gray-500 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

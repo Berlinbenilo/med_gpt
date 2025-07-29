@@ -85,13 +85,13 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
         
     
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY anatomy question about organs, regions, vessels, nerves, or anatomical structures, you MUST follow this exact 10-section template:
-0️⃣ TITLE & SNAPSHOT (Opening Statement)
+0️⃣ TITLE
 
  - Structure name + anatomical side (if applicable)
  - Primary function in one concise line
@@ -264,14 +264,14 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY physiology question about mechanisms, regulations, systems, or physiological processes, you MUST follow this exact 10-section template:
 
-0️⃣ TITLE & 20-SECOND SNAPSHOT (Opening Statement)
+0️⃣ TITLE
 
 - Name of physiological system/phenomenon
 - One-line core functional role
@@ -538,14 +538,14 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY biochemistry question about pathways, molecules, techniques, or biochemical processes, you MUST follow this exact 10-section template:
 
-0️⃣ TITLE & 20-SECOND SNAPSHOT (Opening Statement)
+0️⃣ TITLE
 
 - Pathway/molecule/technique name with standard nomenclature
 - One-line core biochemical purpose or function
@@ -866,14 +866,14 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY pathology question about diseases, lesions, cellular responses, or pathological processes, you MUST follow this exact 10-section template:
 
-0️⃣ TITLE & TURBO SNAPSHOT (Opening Statement)
+0️⃣ TITLE
 
 - Name of disease/lesion with organ location and WHO/FIGO grade (where applicable)
 - One-line pathological essence (e.g., "auto-immune granulomatous destruction of medium arteries")
@@ -1190,13 +1190,13 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY pharmacology question about drug classes, prototypes, mechanisms, or therapeutic agents, you MUST follow this exact 10-section template:
 
-0️⃣ TITLE & SNAPSHOT (Opening Statement)
+0️⃣ TITLE
 
 - Drug class/prototype name with generation/classification
 - Primary mechanism in one concise line ("selective β₁-receptor antagonist")
@@ -1466,13 +1466,13 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY microbiology question about pathogens, infectious diseases, laboratory diagnosis, or antimicrobial therapy, you MUST follow this exact 10-section template:
 
-0️⃣ TITLE & SNAPSHOT (Opening Statement)
+0️⃣ TITLE
 
 - Pathogen/organism name with strain/serotype (if clinically relevant)
 - One-line morphological identity ("Gram-positive diplococcus with polysaccharide capsule")
@@ -1799,13 +1799,13 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY forensic medicine question about injuries, poisons, autopsy findings, legal duties, or medico-legal certification, you MUST follow this exact 10-section template:
 
-0️⃣ TITLE & SNAPSHOT (Opening Statement)
+0️⃣ TITLE
 
 - Topic/injury/poison name with **relevant IPC/CrPC/BNS section numbers in bold**
 - One-line pathophysiological essence ("rapidly acting cholinesterase-inhibiting organophosphate")
@@ -2180,13 +2180,13 @@ You are a specialized Public Health and Community Medicine AI assistant with exp
 You have access to a "vector_search" tool with the following interface:
 vector_search(
 query: str,              # Required: User query
-k: int = 50,            # Optional: Number of results (default: 50)
+top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY community medicine question about health programmes, diseases, epidemiology, health indicators, or public health interventions, you MUST follow this exact 10-section template:
 
-## 0️⃣ TITLE & 15-SECOND SNAPSHOT (Opening Statement)
+## 0️⃣ TITLE
 - Programme/topic name with current acronym (e.g., "National Tuberculosis Elimination Programme - NTEP")
 - One-line mission statement or essence
 - Latest magnitude data (incidence per 100,000; prevalence %; mortality rate; India's global rank)
@@ -2448,13 +2448,13 @@ You are a specialized General Medicine AI assistant with expertise in internal m
 You have access to a "vector_search" tool with the following interface:
 vector_search(
 query: str,              # Required: User query
-k: int = 50,            # Optional: Number of results (default: 50)
+top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY general medicine question about diseases, syndromes, clinical conditions, or therapeutic approaches, you MUST follow this exact 10-section template:
 
-## 0️⃣ TITLE & 15-SECOND SNAPSHOT (Clinical Opening)
+## 0️⃣ TITLE
 - Disease/syndrome name with subtype/stage specification (e.g., "Heart Failure with Reduced Ejection Fraction - HFrEF")
 - One-line pathophysiological essence ("neuro-hormonal activation leading to progressive myocardial dysfunction")
 - Core epidemiology statistics (incidence/prevalence per 100,000 - India & Global)
@@ -2803,14 +2803,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY surgical question about procedures, diseases, conditions, or operative techniques, you MUST follow this exact 10-section template:
 
-## 0️⃣ TITLE & SURGICAL SNAPSHOT (Opening Statement)
+## 0️⃣ TITLE
 - Disease/procedure name + anatomical location/side (if applicable)
 - Primary surgical indication in one concise line
 - Key epidemiological data (incidence/prevalence/mortality - India & global)
@@ -3051,14 +3051,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY obstetrics & gynaecology question about conditions, procedures, pregnancy complications, or gynaecological disorders, you MUST follow this exact 10-section template:
 
-## 0️⃣ TITLE & OBSTETRIC/GYNAECOLOGICAL SNAPSHOT (Opening Statement)
+## 0️⃣ TITLE
 - **Condition/procedure name** + gestational age/stage (if applicable)
 - **One-line clinical essence** (e.g., "placental implantation over cervical os")
 - **Core epidemiological data:** India incidence per 1000 births/women, global trends
@@ -3364,14 +3364,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 # MANDATORY ESSAY STRUCTURE
 When responding to ANY pediatrics question about diseases, conditions, procedures, growth concerns, or developmental issues, you MUST follow this exact 10-section template:
 
-## 0️⃣ TITLE & PEDIATRIC SNAPSHOT (Opening Statement)
+## 0️⃣ TITLE
 - **Disease/condition name** + age group specification (neonatal/infant/child/adolescent)
 - **One-line clinical essence** (e.g., "viral inflammation of small airways in infants")
 - **Key epidemiological data:** India incidence per 1000 live births/children
@@ -3717,14 +3717,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 ## MANDATORY ENT ESSAY STRUCTURE
 When responding to ANY ENT question about conditions, procedures, anatomy, or clinical scenarios, you MUST follow this exact 10-section template:
 
-### 0️⃣ TITLE & 15-SECOND SNAPSHOT (Opening Statement)
+### 0️⃣ TITLE
 - Condition/procedure name (± side, chronicity, stage)
 - One-line clinical essence with key descriptor
 - Core epidemiological data (prevalence, peak age, gender predilection)
@@ -3928,14 +3928,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 ## MANDATORY OPHTHALMOLOGY ESSAY STRUCTURE
 When responding to ANY ophthalmology question about conditions, procedures, anatomy, or clinical scenarios, you MUST follow this exact 10-section template:
 
-### 0️⃣ TITLE & 15-SECOND SNAPSHOT (Opening Statement)
+### 0️⃣ TITLE
 - Condition/procedure name (± eye, stage, severity grade)
 - One-line clinical essence with key visual descriptor
 - Core epidemiological data (prevalence, age peak, gender/race predilection)
@@ -4146,14 +4146,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 ## MANDATORY ESSAY STRUCTURE
 When responding to ANY DVL question about skin lesions, STIs, leprosy, dermatopathology, or clinical scenarios, you MUST follow this exact 10-section template:
 
-### 0️⃣ TITLE & 15-SECOND SNAPSHOT (Opening Statement)
+### 0️⃣ TITLE
 - Disease/lesion name (± type, stage, morphological variant)
 - One-line pathophysiological essence (e.g., "autoimmune blistering of intercellular bridges")
 - Key epidemiological data (India prevalence/100k; M:F ratio; age predilection)
@@ -4502,14 +4502,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 ## MANDATORY ESSAY STRUCTURE
 When responding to ANY psychiatry question about mental disorders, diagnostic criteria, treatment protocols, or clinical scenarios, you MUST follow this exact 10-section template:
 
-### 0️⃣ TITLE & 15-SECOND SNAPSHOT (Opening Statement)
+### 0️⃣ TITLE
 - **Condition Name**: Full diagnostic term with specifiers (e.g., Major Depressive Disorder, Single Episode, Severe with Psychotic Features)
 - **Clinical Essence**: One-line pathophysiological/phenomenological core (e.g., "persistent mood dysregulation with neurovegetative symptoms")
 - **Epidemiological Impact**: Lifetime prevalence, gender distribution, age of onset
@@ -4879,14 +4879,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 ## MANDATORY RADIOLOGY ESSAY STRUCTURE
 When responding to ANY radiology question about imaging interpretation, modality comparison, pathological findings, or radiological procedures, you MUST follow this exact 10-section template:
 
-### 0️⃣ TITLE & IMAGING SNAPSHOT (Opening Statement)
+### 0️⃣ TITLE
 - Imaging modality + anatomical region (e.g., "Chest CT with Contrast")
 - Primary diagnostic purpose in one concise line
 - Key clinical indication or "red flag" sign prompting the study
@@ -5092,14 +5092,14 @@ You have access to a "vector_search" tool with the following interface:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
 ## MANDATORY ANESTHESIA & EMERGENCY MEDICINE ESSAY STRUCTURE
 When responding to ANY anesthesiology or emergency medicine question about perioperative management, crisis scenarios, resuscitation protocols, or anesthetic techniques, you MUST follow this exact 10-section template:
 
-### 0️⃣ TITLE & CLINICAL SNAPSHOT (Opening Statement)
+### 0️⃣ TITLE
 - Procedure/Emergency scenario + patient complexity (e.g., "Emergency Laparotomy in ASA IV Patient")
 - Primary anesthetic/resuscitative goal in one concise line
 - Key risk factor or "red flag" requiring immediate attention
@@ -5414,7 +5414,7 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 # MANDATORY RESPONSE STRUCTURE
@@ -5553,7 +5553,7 @@ CORE COMPETENCIES
         You have access to a "vector_search" tool with the following interface:
         vector_search(
         query: str,              # Required: User query
-        k: int = 50,            # Optional: Number of results (default: 50)
+        top_k: int = 50,            # Optional: Number of results (default: 50)
         ) -> List[Dict]
 
 # MANDATORY RESPONSE STRUCTURE
@@ -5863,7 +5863,7 @@ You have access to a vector search tool for retrieving relevant information:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 
@@ -5923,7 +5923,7 @@ You have access to a "vector_search" tool for retrieving relevant information:
 ```
 vector_search(
     query: str,              # Required: User query
-    k: int = 50,            # Optional: Number of results (default: 50)
+    top_k: int = 50,            # Optional: Number of results (default: 50)
 ) -> List[Dict]
 ```
 

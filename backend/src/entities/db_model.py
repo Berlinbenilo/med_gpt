@@ -41,6 +41,7 @@ class ImageSummary(BaseModel):
 
 
 class ConversationHistory(BaseModel):
+    user_id = CharField()
     conversation_id = CharField()
     user_query = TextField()
     response = TextField()

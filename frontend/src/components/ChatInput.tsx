@@ -1,12 +1,19 @@
 import React, { useState, useRef } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Plus } from 'lucide-react';
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
   disabled?: boolean;
+  onNewChat?: () => void;
+  streamingMode?: boolean;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = false }) => {
+export const ChatInput: React.FC<ChatInputProps> = ({ 
+  onSendMessage, 
+  disabled = false, 
+  onNewChat,
+  streamingMode = false 
+}) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -41,6 +48,21 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = 
   return (
     <div className="border-t border-gray-200 bg-white p-4">
       <form onSubmit={handleSubmit} className="flex gap-3 items-end">
+        {onNewChat && (
+          <button
+            type="button"
+            onClick={onNewChat}
+            className="
+              flex-shrink-0 w-12 h-12 bg-gray-100 hover:bg-gray-200 
+              text-gray-600 rounded-2xl flex items-center justify-center
+              transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95
+            "
+            title="New Chat"
+          >
+            <Plus size={18} />
+          </button>
+        )}
+        
         <div className="flex-1 relative">
           <textarea
             ref={textareaRef}
@@ -74,8 +96,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({ onSendMessage, disabled = 
         </button>
       </form>
       
-      <div className="text-xs text-gray-500 mt-2 text-center">
-        Press Enter to send, Shift+Enter for new line
+      <div className="flex justify-between items-center mt-2">
+        <div className="text-xs text-gray-500">
+          Press Enter to send, Shift+Enter for new line
+        </div>
+        {streamingMode && (
+          <div className="text-xs text-blue-500 font-medium">
+            Streaming mode active
+          </div>
+        )}
       </div>
     </div>
   );
