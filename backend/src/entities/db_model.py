@@ -36,7 +36,7 @@ class Models(BaseModel):
 
 class ImageSummary(BaseModel):
     image_id = CharField(primary_key=True)
-    cropped_image_name = TextField()
+    cropped_image_list = TextField()
     summary = TextField()
 
 

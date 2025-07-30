@@ -13,9 +13,9 @@ from backend.src.entities.db_model import ImageSummary, ImageIngestion
 
 def load_model():
     cfg = get_cfg()
-    cfg.merge_from_file(r"C:\Users\Deepika Ramesh\Projects\med_rag\asserts\models\config.yaml")
+    cfg.merge_from_file(r"C:\Users\Deepika Ramesh\Projects\asserts\models\config.yaml")
     cfg.MODEL.ROI_HEADS.SCORE_THRESH_TEST = 0.8
-    cfg.MODEL.WEIGHTS = r"C:\Users\Deepika Ramesh\Projects\med_rag\asserts\models\model_final.pth"
+    cfg.MODEL.WEIGHTS = r"C:\Users\Deepika Ramesh\Projects\asserts\models\model_final.pth"
     cfg.MODEL.DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
     return DefaultPredictor(cfg)
 
@@ -48,13 +48,13 @@ def crop_detected_regions(instances, image_path, image_id=None, label="Figure", 
             crop_path = os.path.join(output_folder,
                                      f"{image_id}_fig_{idx}.jpg")
             cropped.save(crop_path)
-            crops.append(crop_path)
-            q = ImageSummary.insert(
-                image_id=image_id,
-                cropped_image_name=f"{image_id}_fig_{idx}",
-                summary=""
-            )
-            q.execute()
+            crops.append(f"{image_id}_fig_{idx}.jpg")
+    q = ImageSummary.insert(
+        image_id=image_id,
+        cropped_image_list=crops,
+        summary=""
+    )
+    q.execute()
     return crops
 
 
@@ -63,8 +63,11 @@ if __name__ == '__main__':
     predictor = load_model()
     for record in ImageIngestion.select(ImageIngestion.image_id):
         image_id = record.image_id
-        image_path = fr"C:\Users\Deepika Ramesh\Projects\med_rag\data\images\{image_id}.jpg"
-        instances, vis_image = detect_figures(predictor, image_path)
+        image_path = fr"C:\Users\Deepika Ramesh\Downloads\medical_data\data\images\{image_id}.jpg"
+        if os.path.exists(image_path):
+            instances, vis_image = detect_figures(predictor, image_path)
+            cropped_path = r"C:\Users\Deepika Ramesh\Downloads\medical_data\cropped"
 
-        figure_crops = crop_detected_regions(instances, image_path, image_id=image_id)
-        print(f"Cropped {len(figure_crops)} figures from {image_path}")
+            figure_crops = crop_detected_regions(instances, image_path, image_id=image_id, output_folder= cropped_path)
+            os.remove(image_path)
+            print(f"Cropped {len(figure_crops)} figures from {image_path}")

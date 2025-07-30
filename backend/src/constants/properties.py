@@ -28,11 +28,11 @@ model_config = {
     },
     "gemini-2.0-flash": {
         "model": "gemini-2.0-flash",
-        "api_key": os.getenv("GOOGLE_API_KEY"),
+        "google_api_key": os.getenv("GOOGLE_API_KEY"),
     },
-    "gemini-2.5-pro-preview-03-25": {
-        "model": "gemini-2.5-pro-preview-03-25",
-        "api_key": os.getenv("GOOGLE_API_KEY"),
+    "gemini-2.5-pro": {
+        "model": "gemini-2.5-pro",
+        "google_api_key": os.getenv("GOOGLE_API_KEY"),
     },
     "gpt-4.1": {
         'temperature': 0,

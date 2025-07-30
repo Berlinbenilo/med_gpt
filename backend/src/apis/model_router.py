@@ -29,7 +29,7 @@ async def get_models():
                 'created': 1705539600
             },
             {
-                'id': 'gemini-2.5-pro-preview-03-25', 
+                'id': 'gemini-2.5-pro',
                 'name': 'Gemini 2.5 Pro',
                 'description': 'Google\'s advanced multimodal AI model',
                 'owned_by': 'google',

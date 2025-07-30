@@ -18,7 +18,7 @@ def get_model(model_name: str) -> Tuple[Dict, str]:
         models = {'deepseek-r1-0528': "fireworks",
                 'gpt-4.1': "azure",
                 'llama4-maverick-instruct-basic': "fireworks",
-                'gemini-2.5-pro-preview-03-25': "google",
+                'gemini-2.5-pro': "google",
                 "deepseek-v3-0324": "fireworks"}
         return model_config[model_name], models[model_name]
 

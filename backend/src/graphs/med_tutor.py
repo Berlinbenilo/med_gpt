@@ -18,7 +18,7 @@ from backend.src.tools.vector_search import VectorSearch
 llm_registry = {'deepseek-r1-0528': llm_factory('deepseek-r1-0528', stream= True),
                 'gpt-4.1': llm_factory('gpt-4.1', stream= True),
                 'llama4-maverick-instruct-basic': llm_factory('llama4-maverick-instruct-basic', stream= True),
-                'gemini-2.5-pro-preview-03-25': llm_factory('gemini-2.5-pro-preview-03-25', stream= True),
+                'gemini-2.5-pro': llm_factory('gemini-2.5-pro', stream= True),
                 "deepseek-v3-0324": llm_factory('deepseek-v3-0324')}
 
 
