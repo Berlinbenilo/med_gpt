@@ -19,29 +19,8 @@ spec:
             - containerPort: 8000
           env:
             - name: OPENAI_API_KEY
-              value: "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"
-            - name: ANTHROPIC_API_KEY
-              value: "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"
-            - name: GOOGLE_API_KEY
-              value: "AIzaSyCww2kkSmPzveOWJSByITBX3AnZ2IR0vSU"
-            - name: FIREWORKS_API_KEY
-              value: "fw_3ZhvtXAV3C25sQ2ezwvAkjxF"
-            - name: AZURE_OPENAI_ENDPOINT_EMBED
-              value: "https://medgpt.openai.azure.com/"
-            - name: OPENAI_API_VERSION_EMBED
-              value: "2023-05-15"
-            - name: AZURE_OPENAI_API_KEY_EMBED
-              value: "BqfZKG4eUoLScEr9PvK6ayz7PCvbcwRUWDjPv0f2pi6Omz9KcVp6JQQJ99BGACYeBjFXJ3w3AAAAACOG9wL9"
-            - name: AZURE_OPENAI_ENDPOINT_CHAT
-              value: "https://berli-mdbhf8aw-eastus2.cognitiveservices.azure.com/"
-            - name: AZURE_OPENAI_API_KEY_CHAT
-              value: "C8Q1DiV66aaHfGnX0U6BrMREglB8jxiqGfnxurIdhJ9P3fsV1Yn0JQQJ99BGACHYHv6XJ3w3AAAAACOGzgFg"
-            - name: SERVER_URL
-              value: "http://localhost:8000"
-            - name: QDRANT_HOST
-              value: "qdrant-service"
-            - name: QDRANT_PORT
-              value: "6333"
+              value: "your_openai_api_key_here"
+
 ---
 apiVersion: v1
 kind: Service
