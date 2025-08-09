@@ -129,7 +129,7 @@ pyvenv.cfg
 pip-selfcheck.json
 
 .idea/
-asserts/
+asserts/models/
 
 database.db
 notes.txt
@@ -144,6 +144,10 @@ frontend/.cache/
 frontend/node_modules/
 
 asserts/models/model_final.pth
+deployment/backend_deployment.yaml
+deployment/frontend_deployment.yaml
+deployment/qdrant_deployment.yaml
+deployment/
 
 # PyCharm specific files
 # End of https://www.toptal.com/developers/gitignore/api/pycharm,venv
